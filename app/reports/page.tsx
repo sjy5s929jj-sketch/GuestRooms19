@@ -20,7 +20,11 @@ export default function ReportsPage() {
 
     const today = new Date().toISOString().split("T")[0];
 
-    const { count: bookings } = await supabase
+    const { count: total } = await supabase
+      .from("rooms")
+      .select("*", { count: "exact", head: true });
+    
+      const { count: bookings } = await supabase
       .from("bookings")
       .select("*", { count: "exact", head: true });
 
