@@ -129,11 +129,9 @@ export default function NewBookingPage() {
       ]);
 
     if (error) {
-
-      console.log(error);
-      alert("Booking failed.");
+      console.error("Supabase Error:", error);
+      alert(JSON.stringify(error, null, 2));
       return;
-
     }
 
     await supabase
