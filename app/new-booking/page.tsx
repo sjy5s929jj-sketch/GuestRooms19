@@ -62,6 +62,7 @@ export default function NewBookingPage() {
     }
 
     async function saveBooking() {
+      console.log("1. Save button pressed");
 
     if (
       !guestName ||
@@ -76,6 +77,8 @@ export default function NewBookingPage() {
       return;
 
     }
+    console.log("2. Validation passed");
+    console.log("3. Checking room availability");
 
     // Check latest bookings from database
     const { data: conflicts, error: conflictError } = await supabase
@@ -91,6 +94,10 @@ export default function NewBookingPage() {
 
     }
 
+    console.log("3. Conflict Query");
+    console.log(conflicts);
+    console.log(conflictError);
+
     const roomAlreadyBooked = (conflicts || []).some((booking) => {
 
         return (
@@ -102,12 +109,15 @@ export default function NewBookingPage() {
 
     if (roomAlreadyBooked) {
 
+      console.log("3. Room is already booked for the selected dates.");
       alert("Selected room is already booked for the selected dates.");
      return;
 
     }
 
-    
+    console.log("4. About to insert");
+    console.log("5. Inserting booking");
+
     const { error } = await supabase
       .from("bookings")
       .insert([
@@ -123,10 +133,11 @@ export default function NewBookingPage() {
           Adults: adults,
           Children: children,
           Status: "Occupied",
-          Reservation_Status: "Reserved",
           Remarks: remarks,
         },
       ]);
+      console.log("5. Insert error");
+      console.log(error);
 
     if (error) {
       console.error("Supabase Error:", error);
