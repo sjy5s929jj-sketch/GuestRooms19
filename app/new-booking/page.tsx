@@ -118,30 +118,30 @@ export default function NewBookingPage() {
     console.log("4. About to insert");
     console.log("5. Inserting booking");
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("bookings")
       .insert([
         {
-          "Name of Guest": guestName,
-          "Unit (only number)": unit,
-          "Mobile No": mobile,
-          "WhatsApp No": whatsapp,
-          "Room No": roomNo,
-          Check_in: checkIn,
-          Check_out: checkOut,
-          Purpose: purpose,
-          Adults: adults,
-          Children: children,
-          Status: "Occupied",
-          Remarks: remarks,
+          "Name of Guest": "TEST",
         },
-      ]);
-      console.log("5. Insert error");
-      console.log(error);
+      ])
+      .select();
+
+    console.log("DATA:", data);
+    console.log("ERROR:", error);
+    
+    console.log("5. Insert error");
+    
+    console.log(error);
 
     if (error) {
-      console.error("Supabase Error:", error);
-      alert(JSON.stringify(error, null, 2));
+      console.log("ERROR CODE:", error.code);
+      console.log("ERROR MESSAGE:", error.message);
+      console.log("ERROR DETAILS:", error.details);
+      console.log("ERROR HINT:", error.hint);
+
+      alert(error.message);
+
       return;
     }
 
