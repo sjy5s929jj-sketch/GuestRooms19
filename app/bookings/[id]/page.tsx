@@ -35,10 +35,15 @@ export default function BookingDetailsPage() {
 
   async function checkoutGuest() {
 
+    if (!confirm("Are you sure you want to check out this guest?")) {
+      return;
+    }
+
     const { error: bookingError } = await supabase
       .from("bookings")
       .update({
         Status: "Checked Out",
+        Reservation_Status: "Checked Out",
       })
       .eq("ID", booking.ID);
 
@@ -63,7 +68,8 @@ export default function BookingDetailsPage() {
 
     alert("Guest Checked Out Successfully");
 
-    loadBooking();
+    await loadBooking();
+
   }
 
   if (!booking) {
@@ -87,25 +93,15 @@ export default function BookingDetailsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <p><b>Guest Name:</b> {booking["Name of Guest"]}</p>
-
           <p><b>Unit:</b> {booking["Unit (only number)"]}</p>
-
           <p><b>Mobile:</b> {booking["Mobile No"]}</p>
-
           <p><b>WhatsApp:</b> {booking["WhatsApp No"]}</p>
-
           <p><b>Room:</b> {booking["Room No"]}</p>
-
           <p><b>Purpose:</b> {booking["Purpose"]}</p>
-
           <p><b>Check In:</b> {booking["Check_in"]}</p>
-
           <p><b>Check Out:</b> {booking["Check_out"]}</p>
-
           <p><b>Adults:</b> {booking["Adults"]}</p>
-
           <p><b>Children:</b> {booking["Children"]}</p>
-
           <p><b>Status:</b> {booking["Status"]}</p>
 
         </div>
@@ -126,12 +122,12 @@ export default function BookingDetailsPage() {
 
           <Link
             href={`/bookings/${booking.ID}/edit`}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
             ✏️ Edit Booking
           </Link>
 
-          {booking["Status"] === "Occupied" && (
+          {booking["Status"] !== "Checked Out" && (
 
             <button
               onClick={checkoutGuest}

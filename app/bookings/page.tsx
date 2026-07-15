@@ -92,9 +92,16 @@ export default function BookingsPage() {
 
     <AppLayout>
 
-      <h1 className="text-3xl font-bold mb-6">
-        Booking Register
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+
+        <Link
+            href="/new-booking"
+            className="bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 whitespace-nowrap"
+          >
+            + New Booking
+          </Link>
+
+        </div>
 
       <input
         type="text"
