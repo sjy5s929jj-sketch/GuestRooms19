@@ -13,6 +13,9 @@ export default function LoginCard() {
 
   async function handleLogin() {
 
+    console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("Anon Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
     const { error } = await supabase.auth.signInWithPassword({
       email: username,
       password: password,
@@ -25,7 +28,6 @@ export default function LoginCard() {
     }
 
     router.push("/dashboard");
-
   }
 
   return (
