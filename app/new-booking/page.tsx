@@ -122,7 +122,18 @@ export default function NewBookingPage() {
       .from("bookings")
       .insert([
         {
-          "Name of Guest": "TEST",
+          "Name of Guest": guestName,
+          "Unit (only number)": unit,
+          "Mobile No": mobile,
+          "WhatsApp No": whatsapp,
+          "Room No": roomNo,
+          "Check_in": checkIn,
+          "Check_out": checkOut,
+          "Purpose": purpose,
+          "Adults": adults,
+          "Children": children,
+          "Status": "Occupied",
+          "Remarks": remarks,
         },
       ])
       .select();
