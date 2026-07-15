@@ -43,7 +43,6 @@ export default function BookingDetailsPage() {
       .from("bookings")
       .update({
         Status: "Checked Out",
-        Status: "Checked Out",
       })
       .eq("ID", booking.ID);
 
