@@ -156,13 +156,6 @@ export default function NewBookingPage() {
       return;
     }
 
-    await supabase
-      .from("rooms")
-      .update({
-        is_occupied: true,
-      })
-      .eq("Room_Number", roomNo);
-
     alert("Booking Saved Successfully");
 
     router.push("/bookings");

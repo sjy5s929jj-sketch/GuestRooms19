@@ -6,39 +6,20 @@ import { supabase } from "../../lib/supabase";
 
 export default function CalendarPage() {
 
-  const [rooms, setRooms] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    loadData();
+    loadBookings();
   }, []);
 
-  async function loadData() {
+  async function loadBookings() {
 
-    const { data: roomData } = await supabase
-      .from("rooms")
-      .select("*")
-      .order("Room_Number");
-
-    setRooms(roomData || []);
-
-    const { data: bookingData } = await supabase
+    const { data } = await supabase
       .from("bookings")
-      .select("*");
+      .select("*")
+      .order("Check_in");
 
-    setBookings(bookingData || []);
-  }
-
-  function isOccupied(roomNo: string) {
-
-    return bookings.some((booking) => {
-
-      return (
-        booking["Room No"] === roomNo &&
-        booking["Status"] === "Occupied"
-      );
-
-    });
+    setBookings(data || []);
 
   }
 
@@ -47,12 +28,10 @@ export default function CalendarPage() {
     <AppLayout>
 
       <h1 className="text-3xl font-bold mb-6">
-
-        Room Availability
-
+        Booking Calendar
       </h1>
 
-      <div className="bg-white rounded-xl shadow">
+      <div className="bg-white rounded-xl shadow overflow-hidden">
 
         <table className="min-w-full">
 
@@ -60,17 +39,11 @@ export default function CalendarPage() {
 
             <tr>
 
-              <th className="p-4 text-left">
-                Room
-              </th>
-
-              <th className="p-4 text-left">
-                Type
-              </th>
-
-              <th className="p-4 text-left">
-                Availability
-              </th>
+              <th className="p-4 text-left">Guest</th>
+              <th className="p-4 text-left">Room</th>
+              <th className="p-4 text-left">Check In</th>
+              <th className="p-4 text-left">Check Out</th>
+              <th className="p-4 text-left">Status</th>
 
             </tr>
 
@@ -78,36 +51,40 @@ export default function CalendarPage() {
 
           <tbody>
 
-            {rooms.map((room) => (
+            {bookings.map((booking) => (
 
               <tr
-                key={room.Room_Number}
-                className="border-t"
+                key={booking.ID}
+                className="border-t hover:bg-gray-50"
               >
 
                 <td className="p-4">
-                  {room.Room_Number}
+                  {booking["Name of Guest"]}
                 </td>
 
                 <td className="p-4">
-                  {room.Room_Type}
+                  {booking["Room No"]}
+                </td>
+
+                <td className="p-4">
+                  {booking["Check_in"]}
+                </td>
+
+                <td className="p-4">
+                  {booking["Check_out"]}
                 </td>
 
                 <td className="p-4">
 
-                  {isOccupied(room.Room_Number) ? (
-
-                    <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full">
-                      Occupied
-                    </span>
-
-                  ) : (
-
-                    <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full">
-                      Available
-                    </span>
-
-                  )}
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      booking["Status"] === "Occupied"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {booking["Status"]}
+                  </span>
 
                 </td>
 

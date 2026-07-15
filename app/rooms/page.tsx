@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabase";
 export default function RoomsPage() {
 
   const [rooms, setRooms] = useState<any[]>([]);
+  const [occupiedRooms, setOccupiedRooms] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -27,6 +28,17 @@ export default function RoomsPage() {
     }
 
     setRooms(data || []);
+
+    const { data: occupiedData } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("Status", "Occupied");
+
+    setOccupiedRooms(
+      (occupiedData || []).map((b: any) => String(b["Room No"]))
+    );
+
+
   }
 
   const filteredRooms = rooms.filter((room) => {
@@ -41,9 +53,13 @@ export default function RoomsPage() {
 
   });
 
-  return (
+  function isOccupied(roomNo: string | number) {
+    return occupiedRooms.includes(String(roomNo));
+}
 
-    <AppLayout>
+return (
+
+  <AppLayout>
 
       <h1 className="text-3xl font-bold mb-6">
         Rooms
@@ -72,7 +88,7 @@ export default function RoomsPage() {
           </p>
 
           <p className="text-4xl font-bold text-green-600 mt-2">
-            {rooms.filter(room => !room.is_occupied).length}
+            {rooms.filter(room => !isOccupied(room.Room_Number)).length}
           </p>
 
         </div>
@@ -84,7 +100,7 @@ export default function RoomsPage() {
           </p>
 
           <p className="text-4xl font-bold text-red-600 mt-2">
-            {rooms.filter(room => room.is_occupied).length}
+            {rooms.filter(room => isOccupied(room.Room_Number)).length}
           </p>
 
         </div>
@@ -155,7 +171,7 @@ export default function RoomsPage() {
 
                 <td className="p-4">
 
-                  {room.is_occupied ? (
+                  {isOccupied(room.Room_Number) ? (
 
                     <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
                       Occupied

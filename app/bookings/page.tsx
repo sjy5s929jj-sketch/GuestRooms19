@@ -64,23 +64,6 @@ export default function BookingsPage() {
 
     }
 
-    const { error: roomError } = await supabase
-      .from("rooms")
-      .update({
-
-        is_occupied: false,
-
-      })
-      .eq("Room_Number", roomNo);
-
-    if (roomError) {
-
-      alert("Failed to update room.");
-      console.log(roomError);
-      return;
-
-    }
-
     alert("Guest Checked Out Successfully");
 
     await loadBookings();
@@ -175,7 +158,7 @@ export default function BookingsPage() {
 
                   <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
 
-                    {booking["Reservation_Status"] || "Reserved"}
+                    {booking["Status"] || "Reserved"}
 
                   </span>
 

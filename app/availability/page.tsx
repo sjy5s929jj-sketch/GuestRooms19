@@ -34,7 +34,7 @@ export default function CalendarPage() {
     return bookings.some((booking) => {
 
       return (
-        booking["Room No"] === roomNo &&
+        String(booking["Room No"]) === String(roomNo) &&
         booking["Status"] === "Occupied"
       );
 

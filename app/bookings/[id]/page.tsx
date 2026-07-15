@@ -43,26 +43,13 @@ export default function BookingDetailsPage() {
       .from("bookings")
       .update({
         Status: "Checked Out",
-        Reservation_Status: "Checked Out",
+        Status: "Checked Out",
       })
       .eq("ID", booking.ID);
 
     if (bookingError) {
       alert("Failed to update booking.");
       console.log(bookingError);
-      return;
-    }
-
-    const { error: roomError } = await supabase
-      .from("rooms")
-      .update({
-        is_occupied: false,
-      })
-      .eq("Room_Number", booking["Room No"]);
-
-    if (roomError) {
-      alert("Failed to update room.");
-      console.log(roomError);
       return;
     }
 

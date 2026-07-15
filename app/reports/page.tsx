@@ -25,14 +25,11 @@ export default function ReportsPage() {
       .select("*", { count: "exact", head: true });
 
     const { count: occupied } = await supabase
-      .from("rooms")
+      .from("bookings")
       .select("*", { count: "exact", head: true })
-      .eq("is_occupied", true);
+      .eq("Status", "Occupied");
 
-    const { count: available } = await supabase
-      .from("rooms")
-      .select("*", { count: "exact", head: true })
-      .eq("is_occupied", false);
+    const available = (total || 0) - (occupied || 0);
 
     const { count: checkin } = await supabase
       .from("bookings")

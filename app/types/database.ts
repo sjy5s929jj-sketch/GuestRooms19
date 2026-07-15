@@ -19,6 +19,5 @@ export interface Booking {
   Adults: number;
   Children: number;
   Status: string;
-  Reservation_Status: string;
   Remarks: string;
 }
