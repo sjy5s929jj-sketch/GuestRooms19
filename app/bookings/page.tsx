@@ -52,7 +52,6 @@ export default function BookingsPage() {
       .update({
 
         Status: "Checked Out",
-        Reservation_Status: "Checked Out",
 
       })
       .eq("ID", id);
