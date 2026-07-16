@@ -28,7 +28,7 @@ export default function Header() {
         </h2>
 
         <p className="text-gray-500">
-          Military Guest Room Management System
+          Guest Room Management System
         </p>
 
       </div>

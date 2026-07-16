@@ -1,49 +1,301 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppLayout from "../components/layout/AppLayout";
 import { supabase } from "../../lib/supabase";
 
+interface Room {
+  Room_Number: string;
+  Room_Type: string;
+  Block: string;
+  Floor: number;
+}
+
+interface Booking {
+  ID: number;
+  "Name of Guest": string;
+  "Room No": string;
+  Check_in: string;
+  Check_out: string;
+  Status: string;
+}
+
+interface CalendarCell {
+  room: Room;
+  date: Date;
+  booking?: Booking;
+  state: "available" | "checkin" | "occupied" | "checkout";
+}
+
 export default function CalendarPage() {
 
-  const [bookings, setBookings] = useState<any[]>([]);
+  const router = useRouter();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+
+  const [startDate, setStartDate] = useState(() => {
+
+    const d = new Date();
+    d.setHours(0,0,0,0);
+
+    return d;
+
+  });
 
   useEffect(() => {
-    loadBookings();
+
+    loadData();
+
   }, []);
 
-  async function loadBookings() {
+  async function loadData() {
 
-    const { data } = await supabase
-      .from("bookings")
+    const { data: roomData } = await supabase
+      .from("rooms")
       .select("*")
-      .order("Check_in");
+      .order("Room_Number");
 
-    setBookings(data || []);
+    const { data: bookingData } = await supabase
+      .from("bookings")
+      .select("*");
+
+    setRooms(roomData || []);
+    setBookings(bookingData || []);
 
   }
 
-  return (
+  const days = useMemo(() => {
 
+    return Array.from({ length: 30 }, (_, index) => {
+
+      const d = new Date(startDate);
+
+      d.setDate(startDate.getDate() + index);
+
+      return d;
+
+    });
+
+  }, [startDate]);
+
+  function formatDate(date: Date) {
+
+    return date.toISOString().split("T")[0];
+
+  }
+
+  function previous30Days() {
+
+    const d = new Date(startDate);
+
+    d.setDate(d.getDate() - 30);
+
+    setStartDate(d);
+
+  }
+
+  function next30Days() {
+
+    const d = new Date(startDate);
+
+    d.setDate(d.getDate() + 30);
+
+    setStartDate(d);
+
+  }
+
+  function today() {
+
+    const d = new Date();
+
+    d.setHours(0,0,0,0);
+
+    setStartDate(d);
+
+  }
+
+  function getBookingForDate(
+    roomNo: string,
+    date: Date
+  ): Booking | undefined {
+
+    const current = formatDate(date);
+
+    return bookings.find((booking) => {
+
+      if (
+          booking.Status !== "Booked" &&
+          booking.Status !== "Occupied" &&
+          booking.Status !== "Checked Out"
+    )
+  return false;
+
+      if (String(booking["Room No"]) !== String(roomNo))
+        return false;
+
+      return (
+        current >= booking.Check_in &&
+        current <= booking.Check_out
+      );
+
+    });
+
+  }
+
+  function getCellState(
+    booking: Booking | undefined,
+    date: Date
+  ): CalendarCell["state"] {
+
+    if (!booking)
+      return "available";
+
+    const current = formatDate(date);
+
+    if (current === booking.Check_in)
+      return "checkin";
+
+    if (current === booking.Check_out)
+      return "checkout";
+
+    return "occupied";
+
+  }
+
+  const calendar = useMemo(() => {
+
+    return rooms.map((room) => {
+
+      return {
+
+        room,
+
+        cells: days.map((date) => {
+
+          const booking = getBookingForDate(
+            String(room.Room_Number),
+            date
+          );
+
+          return {
+
+            room,
+            date,
+            booking,
+            state: getCellState(booking, date),
+
+          } as CalendarCell;
+
+        }),
+
+      };
+
+    });
+
+  }, [rooms, bookings, days]);
+
+  function getInitials(name: string) {
+
+    return name
+      .split(" ")
+      .map((x) => x[0])
+      .join("")
+      .substring(0,2)
+      .toUpperCase();
+
+  }
+
+  function cellColor(state: CalendarCell["state"]) {
+
+    switch(state){
+
+      case "checkin":
+        return "bg-yellow-300";
+
+      case "occupied":
+        return "bg-red-500 text-white";
+
+      case "checkout":
+        return "bg-blue-300";
+
+      default:
+        return "bg-green-100";
+
+    }
+
+  }
+
+    return (
     <AppLayout>
 
-      <h1 className="text-3xl font-bold mb-6">
-        Booking Calendar
-      </h1>
+      <div className="flex items-center justify-between mb-6">
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <h1 className="text-3xl font-bold">
+          Booking Calendar
+        </h1>
 
-        <table className="min-w-full">
+        <div className="flex gap-2">
 
-          <thead className="bg-gray-100">
+          <button
+            onClick={previous30Days}
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            ◀ Previous 30 Days
+          </button>
+
+          <button
+            onClick={today}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Today
+          </button>
+
+          <button
+            onClick={next30Days}
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            Next 30 Days ▶
+          </button>
+
+        </div>
+
+      </div>
+
+      <div className="overflow-auto border rounded-xl shadow">
+
+        <table className="min-w-max border-collapse">
+
+          <thead>
 
             <tr>
 
-              <th className="p-4 text-left">Guest</th>
-              <th className="p-4 text-left">Room</th>
-              <th className="p-4 text-left">Check In</th>
-              <th className="p-4 text-left">Check Out</th>
-              <th className="p-4 text-left">Status</th>
+              <th className="sticky left-0 z-20 bg-gray-200 border p-3 min-w-[100px]">
+                Room
+              </th>
+
+              {days.map((day) => (
+
+                <th
+                  key={formatDate(day)}
+                  className="bg-gray-100 border p-2 min-w-[75px] text-center"
+                >
+
+                  <div className="font-semibold">
+                    {day.toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                    })}
+                  </div>
+
+                  <div className="text-xs text-gray-500">
+                    {day.toLocaleDateString("en-IN", {
+                      month: "short",
+                    })}
+                  </div>
+
+                </th>
+
+              ))}
 
             </tr>
 
@@ -51,42 +303,61 @@ export default function CalendarPage() {
 
           <tbody>
 
-            {bookings.map((booking) => (
+            {calendar.map((row) => (
 
-              <tr
-                key={booking.ID}
-                className="border-t hover:bg-gray-50"
-              >
+              <tr key={row.room.Room_Number}>
 
-                <td className="p-4">
-                  {booking["Name of Guest"]}
+                <td className="sticky left-0 bg-white border font-semibold p-3">
+
+                  {row.room.Room_Number}
+
                 </td>
+                                {row.cells.map((cell) => (
 
-                <td className="p-4">
-                  {booking["Room No"]}
-                </td>
+                  <td
+                    key={`${row.room.Room_Number}-${formatDate(cell.date)}`}
+                    className={`border p-1 text-center cursor-pointer ${cellColor(cell.state)}`}
+                    onClick={() => {
 
-                <td className="p-4">
-                  {booking["Check_in"]}
-                </td>
+                      if (cell.booking) {
 
-                <td className="p-4">
-                  {booking["Check_out"]}
-                </td>
+                        router.push(`/bookings/${cell.booking.ID}`);
 
-                <td className="p-4">
+                      }
 
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      booking["Status"] === "Occupied"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
+                    }}
+                    title={
+                      cell.booking
+                        ? `${cell.booking["Name of Guest"]}\n${cell.booking.Check_in} - ${cell.booking.Check_out}`
+                        : "Available"
+                    }
                   >
-                    {booking["Status"]}
-                  </span>
 
-                </td>
+                    {cell.booking ? (
+
+                      <div className="flex flex-col items-center">
+
+                        <span className="font-bold text-xs">
+
+                          {getInitials(
+                            cell.booking["Name of Guest"]
+                          )}
+
+                        </span>
+
+                      </div>
+
+                    ) : (
+
+                      <span className="text-green-700 text-lg">
+                        •
+                      </span>
+
+                    )}
+
+                  </td>
+
+                ))}
 
               </tr>
 
@@ -98,8 +369,32 @@ export default function CalendarPage() {
 
       </div>
 
-    </AppLayout>
+      <div className="flex gap-6 mt-6 text-sm">
 
+  <div className="flex items-center gap-2">
+    <div className="w-5 h-5 bg-green-100 border rounded"></div>
+    <span>Available</span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <div className="w-5 h-5 bg-yellow-300 border rounded"></div>
+    <span>Check In</span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <div className="w-5 h-5 bg-red-500 border rounded"></div>
+    <span>Occupied</span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <div className="w-5 h-5 bg-blue-300 border rounded"></div>
+    <span>Check Out</span>
+  </div>
+
+</div>
+
+    </AppLayout>
   );
 
 }
+
